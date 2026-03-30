@@ -55,15 +55,20 @@ func (g *Gorgon) encrypt(data string) map[string]string {
     }
 
     paramList := make([]int, 0)
-    for i := 0; i < 12; i += 4 {
-        temp := data[8*i : 8*(i+1)]
-        for j := 0; j < 4; j++ {
-            if len(temp) >= (j+1)*2 {
-                val, _ := strconv.ParseInt(temp[j*2:(j+1)*2], 16, 64)
-                paramList = append(paramList, int(val))
+    
+    // تأكد من أن طول data كافٍ
+    if len(data) >= 96 {
+        for i := 0; i < 12; i += 4 {
+            temp := data[8*i : 8*(i+1)]
+            for j := 0; j < 4; j++ {
+                if len(temp) >= (j+1)*2 {
+                    val, _ := strconv.ParseInt(temp[j*2:(j+1)*2], 16, 64)
+                    paramList = append(paramList, int(val))
+                }
             }
         }
     }
+    
     paramList = append(paramList, []int{0x0, 0x6, 0xB, 0x1C}...)
 
     H := int(g.unix)
@@ -74,8 +79,13 @@ func (g *Gorgon) encrypt(data string) map[string]string {
         (H&0x000000FF)>>0,
     )
 
+    // تأكد أن paramList له طول كافٍ
+    for len(paramList) < length {
+        paramList = append(paramList, 0)
+    }
+
     eorResultList := make([]int, length)
-    for i := 0; i < length && i < len(paramList); i++ {
+    for i := 0; i < length; i++ {
         eorResultList[i] = paramList[i] ^ key[i]
     }
 
