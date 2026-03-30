@@ -364,27 +364,29 @@ func (pb *ProtoBuf) PutProtoBuf(idx int, data *ProtoBuf) {
 }
 
 func (pb *ProtoBuf) parseDict(data map[int]interface{}) error {
-	for k, v := range data {
-		switch val := v.(type) {
-		case int:
-			pb.PutVarint(k, uint64(val))
-		case uint64:
-			pb.PutVarint(k, val)
-		case string:
-			pb.PutUtf8(k, val)
-		case []byte:
-			pb.PutBytes(k, val)
-		case map[int]interface{}:
-			subPb, err := NewProtoBuf(val)
-			if err != nil {
-				return err
-			}
-			pb.PutProtoBuf(k, subPb)
-		default:
-			return fmt.Errorf("unsupported type to protobuf: %T", v)
-		}
-	}
-	return nil
+    for k, v := range data {
+        switch val := v.(type) {
+        case int:
+            pb.PutVarint(k, uint64(val))
+        case int64:
+            pb.PutVarint(k, uint64(val))  // أضف هذا
+        case uint64:
+            pb.PutVarint(k, val)
+        case string:
+            pb.PutUtf8(k, val)
+        case []byte:
+            pb.PutBytes(k, val)
+        case map[int]interface{}:
+            subPb, err := NewProtoBuf(val)
+            if err != nil {
+                return err
+            }
+            pb.PutProtoBuf(k, subPb)
+        default:
+            return fmt.Errorf("unsupported type to protobuf: %T", v)
+        }
+    }
+    return nil
 }
 
 func (pb *ProtoBuf) ToDict(out map[int]interface{}) (map[int]interface{}, error) {
